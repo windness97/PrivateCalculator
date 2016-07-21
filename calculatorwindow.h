@@ -3,26 +3,21 @@
 
 #include <QtWidgets>
 #include <string>
+#include "NumberButton.h"
+#include "SymbolButton.h"
+#include "Calculator.h"
 
-//class QLineEdit;
-//class QPushButton;
+class SymbolButton; // !!!
+class Calculator;
 
 class CalculatorWindow : public QDialog
 {
 	Q_OBJECT
+public: // static
+	void init();
 
-public:
-	CalculatorWindow(QWidget *parent = 0);
-	~CalculatorWindow();
-
-signals:
-
-private slots:
-
-private: // widgets
 	static const int TOTAL_SYMBOL = 8;
-
-	static enum FLAG_SYMBOL {
+	enum FLAG_SYMBOL {
 		EQUAL = 0,
 		CLEAR = 1,
 		PLUS = 2,
@@ -33,17 +28,36 @@ private: // widgets
 		BACK = 7
 	};
 
-	//QString STRING_SYMBOL[TOTAL_SYMBOL];
-
-	QLabel *showText;
-	QPushButton *numberButtons[10];
-	QPushButton *symbolButtons[TOTAL_SYMBOL];
+private: // C
+	//static QString STRING_SYMBOL[TOTAL_SYMBOL];
+	QString STRING_SYMBOL[TOTAL_SYMBOL];
 
 	static const int MARGIN = 8;
 	static const int SPACING = 8;
 	static const int BUTTON_HEIGHT = 35;
 	static const int BUTTON_WIDTH = 40;
 	static const int BUTTON_WIDTH_LARGE = 2 * BUTTON_WIDTH + SPACING;
+
+public:
+	CalculatorWindow(QWidget *parent = 0);
+	~CalculatorWindow();
+
+private slots:
+	void onNumberClicked(int n);
+	void onSymbolClicked(FLAG_SYMBOL flag);
+	void onSymbolClicked(int flag);
+
+	void onReceiveResult(int result);
+	void onReceiveInfo(QString &str);
+
+private: // calculator
+	Calculator *calculator;
+
+private: // widgets
+	QLabel *showText;
+	SymbolButton *symbolButtons[TOTAL_SYMBOL];
+	//QPushButton *symbolButtons[TOTAL_SYMBOL];
+	NumberButton *numberButtons[10];
 
 private: //private methods
 	void p_initWidgets();

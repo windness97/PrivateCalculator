@@ -3,6 +3,10 @@
 CalculatorWindow::CalculatorWindow(QWidget *parent)
 	: QDialog(parent)
 {
+	init();
+
+	calculator = new Calculator();
+
 	p_initWidgets();
 	p_connect();
 	p_setLayout();
@@ -11,17 +15,40 @@ CalculatorWindow::CalculatorWindow(QWidget *parent)
 	setFixedHeight(sizeHint().height());
 }
 
-CalculatorWindow::~CalculatorWindow()
-{
+CalculatorWindow::~CalculatorWindow() {}
 
+////// slots //////
+
+void CalculatorWindow::onNumberClicked(int n)
+{
+	showText->setText(QString::number(n, 10));
+	calculator->receiveNumber(n);
+}
+
+// ERROR!!!
+void CalculatorWindow::onSymbolClicked(FLAG_SYMBOL flag)
+{
+	showText->setText(STRING_SYMBOL[flag]);
+}
+
+void CalculatorWindow::onSymbolClicked(int flag)
+{
+	calculator->receiveSymbol(flag);
+}
+
+void CalculatorWindow::onReceiveResult(int result)
+{
+	showText->setText(QString::number(result, 10));
+}
+
+void CalculatorWindow::onReceiveInfo(QString &str) {
+	showText->setText(str);
 }
 
 ////// private methods //////
 
 void CalculatorWindow::p_initWidgets()
 {
-	QString STRING_SYMBOL[TOTAL_SYMBOL] = { "=", "C", "+", "-", "*", "/", ".", "<-" };
-
 	showText = new QLabel(tr("0"));
 	showText->setAutoFillBackground(true);
 	showText->setBackgroundRole(QPalette::Base);
@@ -34,15 +61,20 @@ void CalculatorWindow::p_initWidgets()
 
 	QFont buttonFont("Microsoft YaHei", 10, QFont::DemiBold);
 	for (int i = 0; i < 10; i++) {
-		numberButtons[i] = new QPushButton(QString::number(i, 10));
+		numberButtons[i] = new NumberButton(QString::number(i, 10), i);
 		numberButtons[i]->setFixedWidth(BUTTON_WIDTH);
 		numberButtons[i]->setFixedHeight(BUTTON_HEIGHT);
 		//numberButtons[i]->setText(QString::number((numberButtons[i]->contentsMargins)->top(), 10));
-		//numberButtons[i]->setContentsMargins
 		numberButtons[i]->setFont(buttonFont);
 	}
 	for (int i = 0; i < TOTAL_SYMBOL; i++) {
-		symbolButtons[i] = new QPushButton(STRING_SYMBOL[i]);
+
+		//symbolButtons[i] = new SymbolButton(STRING_SYMBOL[i], FLAG_SYMBOL(i));
+		symbolButtons[i] = new SymbolButton(STRING_SYMBOL[i], i);
+
+		//symbolButtons[i] = new SymbolButton(STRING_SYMBOL[i]);
+		//symbolButtons[i] = new QPushButton(STRING_SYMBOL[i]);
+
 		if (i == CLEAR || i == EQUAL) symbolButtons[i]->setFixedWidth(BUTTON_WIDTH_LARGE);
 		else symbolButtons[i]->setFixedWidth(BUTTON_WIDTH);
 		symbolButtons[i]->setFixedHeight(BUTTON_HEIGHT);
@@ -52,7 +84,6 @@ void CalculatorWindow::p_initWidgets()
 
 void CalculatorWindow::p_setLayout()
 {
-	QString STRING_SYMBOL[TOTAL_SYMBOL] = { "=", "C", "+", "-", "*", "/", ".", "<-" };
 	QVBoxLayout *mainLayout = new QVBoxLayout;
 
 	QHBoxLayout *lines[5];
@@ -98,5 +129,24 @@ void CalculatorWindow::p_setLayout()
 
 void CalculatorWindow::p_connect()
 {
+	for (int i = 0; i < 10; i++) 
+		connect(numberButtons[i], SIGNAL(numberButtonClicked(int)), this, SLOT(onNumberClicked(int)));
 
+	for (int i = 0; i < TOTAL_SYMBOL; i++) 
+		//connect(symbolButtons[i], SIGNAL(symbolButtonClicked(FLAG_SYMBOL)), this, SLOT(onSymbolClicked(FLAG_SYMBOL)));
+		connect(symbolButtons[i], SIGNAL(symbolButtonClicked(int)), this, SLOT(onSymbolClicked(int)));
+
+	connect(calculator, SIGNAL(pushResult(int)), this, SLOT(onReceiveResult(int)));
+	connect(calculator, SIGNAL(pushInfo(QString &)), this, SLOT(onReceiveInfo(QString &)));
+
+	//connect(this, SIGNAL(numberClicked(i)), this, SLOT(onNumberClicked(i)));
+	//connect(this, SIGNAL(symbolClicked(i)), this, SLOT(onSymbolClicked(i)));
+}
+
+////// static //////
+void CalculatorWindow::init() {
+	QString temp[TOTAL_SYMBOL] = { "=", "C", "+", "-", "*", "/", ".", "<-" };
+	for (int i = 0; i < TOTAL_SYMBOL; i++) {
+		STRING_SYMBOL[i] = QString(temp[i]);
+	}
 }
